@@ -22,9 +22,42 @@ def store_chunks(
 ):
 
 #upsert-> if not exist inert, if exists then updates
-    collection.upsert(
+    collection.upsert(      #chromadb method
         ids = ids, 
         embeddings= embeddings, 
         documents=documents,
         metadatas=metadatas,
     )
+    
+# retrieve chunks
+def query_chunks(
+    query_embedding,
+    top_k,
+    where = None,
+):
+    #perform similarity search
+    return collection.query(
+        query_embeddings = query_embedding,
+        n_results = top_k,
+        where = where,
+        include=[
+            "documents",
+            "metadatas",
+            "distances",
+        ],
+    )
+    
+    
+#list papers
+def get_all_papers():
+    data = collection.get(
+        include = ["metadata"]
+    )
+    
+    papers = {
+        meta["paper"]
+        for meta in data["metadata"]
+    }
+    
+    return sorted(list(papers))
+
