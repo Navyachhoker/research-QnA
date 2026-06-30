@@ -17,15 +17,15 @@ from app.utils.pdf_utils import (
 def ingest_pdf(
     pdf_path: str,
 ) -> str:
-    """
-    Ingest a single PDF into ChromaDB.
-    """
+
+    #Ingest a single PDF into ChromaDB.
+    
 
     if not os.path.exists(pdf_path):
         raise FileNotFoundError(
             f"PDF not found: {pdf_path}"
         )
-
+    #splittext-> split paper name and extension(.pdf)
     paper_name = os.path.splitext(
         os.path.basename(pdf_path)
     )[0]
@@ -35,12 +35,12 @@ def ingest_pdf(
     pages = extract_text_from_pdf(pdf_path)
 
     chunks = chunk_text(pages)
-
+    #tet needed for embedding model
     texts = [
         chunk["text"]
         for chunk in chunks
     ]
-
+    # each chunk txt is converted into 1 embedding vector
     embeddings = embedder.encode(
         texts,
         show_progress_bar=True,

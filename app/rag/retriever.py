@@ -1,4 +1,5 @@
-#Handles semantic retrieval from ChromaDB.
+#Handles semantic retrieval from ChromaDB
+#Convert the user's question into an embedding
 
 from app.config import TOP_K
 
@@ -14,10 +15,10 @@ def retrieve(
     top_k: int = TOP_K,
     paper_filter: str | None = None,
 ) -> list[dict]:
-    """
-    Retrieve the most relevant chunks for a query.
-    """
 
+    #Retrieve the most relevant chunks for a query
+   
+    #Convert the question into an embedding
     query_embedding = embedder.encode(
         [query]
     ).tolist()
