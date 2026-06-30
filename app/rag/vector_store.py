@@ -53,10 +53,11 @@ def get_all_papers():
     data = collection.get(
         include = ["metadata"]
     )
-    
+    #set comprehension
     papers = {
-        meta["paper"]
-        for meta in data["metadata"]
+        meta["paper"] #expression-> value added to the set
+        for meta in data["metadata"] # meta(item)-> var representing each element
+        #data(iterable)
     }
     
     return sorted(list(papers))

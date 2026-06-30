@@ -1,29 +1,39 @@
 # Prompt templates used by the LLM.
 
+
+#is responsilbe for creating the final prompt 
+# that is sent to LLM
+#includes  q from user,
+#retrived doc chunk
+#clear instructions for the model
 def build_rag_prompt(
     question: str,
     chunks: list[dict],
 ) -> str:
-    """
-    Build a prompt using retrieved chunks.
-    """
 
+    # Build a prompt using retrieved chunks
+
+    # will store the formatted chunks
     context = []
 
     for i, chunk in enumerate(chunks, start=1):
-
+        #fromats each chunk into readable block
         context.append(
             f"""
 [Source {i}]
-Paper: {chunk['paper']}
+Paper: {chunk['paper']} 
 Page: {chunk['page']}
 
 {chunk['text']}
 """
         )
 
+    #joining all the chunks into 1 long string
     context = "\n\n".join(context)
 
+
+
+    # creating the compelete prompt
     prompt = f"""
 You are an AI Research Assistant.
 
