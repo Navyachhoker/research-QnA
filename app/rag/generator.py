@@ -1,5 +1,7 @@
 #Uses Groq LLM to generate answers from retrieved document chunks.
-
+#the answer shown to user will include 2 things
+#1) answer by LLM
+#2) sources- metadata about where the information came from
 
 import os
 
@@ -25,10 +27,9 @@ def generate_answer(
     question: str,
     chunks: list[dict],
 ):
-    """
-    Generate answer using retrieved chunks.
-    """
-
+    #Generate answer using retrieved chunks.
+    
+    #if there were no similar(relevant) chunks found
     if not chunks:
 
         return {
@@ -41,6 +42,10 @@ def generate_answer(
         chunks,
     )
 
+    #client → Object created from the Groq class.
+    #chat → Chat API interface provided by the Groq SDK.
+    #completions → Chat completions service.
+    #create() → Method that sends your request to Groq's servers and returns the model's response.
     response = client.chat.completions.create(
 
         model=GROQ_MODEL,
@@ -64,6 +69,7 @@ def generate_answer(
 
     answer = response.choices[0].message.content
 
+    #will store info about each retrieved chunks
     sources = []
 
     for index, chunk in enumerate(chunks, start=1):
