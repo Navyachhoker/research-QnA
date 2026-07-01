@@ -23,6 +23,7 @@ def retrieve(
         [query]
     ).tolist()
 
+    #filter
     where = (
         {"paper": paper_filter}
         if paper_filter
@@ -39,6 +40,7 @@ def retrieve(
     metadatas = results["metadatas"][0]
     distances = results["distances"][0]
 
+    #will store formatted results
     retrieved = []
 
     for doc, meta, distance in zip(
