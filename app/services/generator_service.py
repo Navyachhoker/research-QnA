@@ -11,28 +11,13 @@ from app.rag.prompts import build_rag_prompt
 
 client = Groq(api_key=GROQ_API_KEY)
 
-prompt = build_rag_prompt(question, chunks)
 
 
 def generate(
     question: str,
     chunks: list[dict],
 ) -> dict:
-    """
-    Generate the final answer using the retrieved chunks.
-
-    Steps:
-
-    User Question
-            ↓
-    Retrieved Chunks
-            ↓
-    Prompt Construction
-            ↓
-    Groq LLM
-            ↓
-    Final Answer + Sources
-    """
+  
 
     # -------------------------------------------------
     # If nothing was retrieved, there is no context
@@ -46,7 +31,7 @@ def generate(
         }
 
     # Build the complete prompt.
-    prompt = build_prompt(
+    prompt = build_rag_prompt(
         question,
         chunks,
     )

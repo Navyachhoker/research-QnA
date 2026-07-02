@@ -2,7 +2,7 @@ import os
 import fitz
 import chromadb
 from sentence_transformers import SentenceTransformer
-from config import (
+from app.config import (
     CHROMA_PATH,
     COLLECTION_NAME,
     EMBEDDING_MODEL,
@@ -27,6 +27,7 @@ def ingest_pdf(
     pdf_path: str,
     paper_name: str,
 ) -> int:
+    print("1. Starting ingestion")
     pages = extract_text_from_pdf(pdf_path)
     
     chunks = chunk_text(pages)

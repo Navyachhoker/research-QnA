@@ -1,8 +1,8 @@
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from services.retriever_service import retrieve
-from services.generator_service import generate
+from app.services.retriever_service import retrieve
+from app.services.generator_service import generate
 
 
 router = APIRouter(prefix ="/qa", tags= ["Q&A"])

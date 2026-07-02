@@ -3,7 +3,7 @@
 import os
 import shutil
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from services.ingest_service import ingest_pdf, list_papers
+from app.services.ingest_service import ingest_pdf, list_papers
 from app.config import UPLOAD_DIR
 
 
@@ -12,7 +12,7 @@ router = APIRouter(prefix="/papers", tags=["Papers"])
 #(...) tells the this parameter is required
 #Uploadfile- allows to upload file and work with it
 @router.post("/upload")
-async def upload_paper(file: UploadFile = file(...)):
+async def upload_paper(file: UploadFile = File(...)):
     
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail= "only pdf files are supposted.")
