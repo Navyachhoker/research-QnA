@@ -7,47 +7,11 @@ from app.config import (
     MAX_TOKENS,
 )
 
+from app.rag.prompts import build_rag_prompt
+
 client = Groq(api_key=GROQ_API_KEY)
 
-
-def build_prompt(
-    question: str,
-    chunks: list[dict],
-) -> str:
-    
-
-    context = "\n\n".join(
-        f"[Source {i}]\n"
-        f"Paper: {chunk['paper']} | Page: {chunk['page']}\n"
-        f"-----------------------------\n"
-        f"{chunk['text']}"
-        for i, chunk in enumerate(chunks, start=1)
-    )
-
-
-    prompt = f"""
-You are a research assistant.
-
-Answer ONLY using the information provided in the context.
-
-After every important statement,
-cite the corresponding source using [Source X].
-
-If the answer cannot be found in the context,
-reply:
-
-"I could not find a relevant answer."
-
-CONTEXT:
-{context}
-
-QUESTION:
-{question}
-
-ANSWER:
-"""
-
-    return prompt
+prompt = build_rag_prompt(question, chunks)
 
 
 def generate(
