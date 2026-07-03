@@ -1,7 +1,7 @@
 #summarization + comparison logic
 
 from groq import Groq
-from app.config import GROQ_API_KEY, GROQ_MODEL
+from app.config import GROQ_API_KEY, GROQ_MODEL,TEMPERATURE, MAX_TOKENS
 from app.services.retriever_service import retrieve
 from app.services.ingest_service import list_papers
 
@@ -14,8 +14,8 @@ def _call_groq(system_prompt: str, user_prompt: str)-> str:
             {"role": "system", "content": system_prompt},
             {"role": "user",   "content": user_prompt},
         ],
-        temperature=0.3,
-        max_tokens=2048,
+        temperature=TEMPERATURE,
+        max_tokens=MAX_TOKENS,
     )
     
     return response.choices[0].message.content.strip()

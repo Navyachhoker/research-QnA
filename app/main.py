@@ -12,6 +12,8 @@ app = FastAPI(
 )
 
 # Allow React frontend (any origin in dev — lock this down in prod)
+#* means allow requests from any website
+#* allows all methods(put, get, post, delete)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,21 +21,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app = FastAPI(
-    title="ResearchGPT API",
-    description="RAG-based research paper Q&A backend",
-    version="1.0.0",
-)
 
 # Register routers
+#registers all the endpoints defined in papers.py
+#
+#
 app.include_router(papers.router)
 app.include_router(qa.router)
 app.include_router(analysis.router)  
 
 @app.get("/")
 def root():
-    return {"status": "ok", "message": "ResearchGPT API is running."}
-
-@app.get("/")
-def root():
-    return {"status": "ok", "message": "ResearchGPT API is running."}
+    return {
+        "status": "ok",
+        "message": "ResearchGPT API is running."
+        }
