@@ -1,82 +1,41 @@
 // src/api/client.js
+import axios from 'axios'
 
-import axios from "axios";
+const http = axios.create({ baseURL: '/api' })
 
-const api = axios.create({
-  baseURL: "/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+// Attach token from localStorage before every request
+http.interceptors.request.use((config) => {
+  const stored = localStorage.getItem('rg_user')
+  if (stored) {
+    const { token } = JSON.parse(stored)
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
 
-// ---------------- Papers ----------------
+// ── Auth ───────────────────────────────────────────────────────────────────────
+export const register = (email, password) => http.post('/auth/register', { email, password })
+export const login    = (email, password) => http.post('/auth/login',    { email, password })
 
-export const uploadPaper = async (file) => {
-  const formData = new FormData();
-  formData.append("file", file);
+// ── Papers ─────────────────────────────────────────────────────────────────────
+export const uploadPaper = (file) => {
+  const form = new FormData()
+  form.append('file', file)
+  return http.post('/papers/upload', form)
+}
+export const listPapers = () => http.get('/papers/list')
 
-  return api.post("/papers/upload", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-};
+// ── Sessions ───────────────────────────────────────────────────────────────────
+export const createSession = (name)      => http.post('/sessions/', { name })
+export const listSessions  = ()          => http.get('/sessions/')
+export const getHistory    = (id)        => http.get(`/sessions/${id}/history`)
+export const deleteSession = (id)        => http.delete(`/sessions/${id}`)
 
-export const listPapers = async () => {
-  return api.get("/papers/list");
-};
+// ── Q&A ────────────────────────────────────────────────────────────────────────
+export const askQuestion = (question, paper = null, top_k = 5, session_id = null) =>
+  http.post('/qa/ask', { question, paper, top_k, session_id })
 
-// ---------------- Q&A ----------------
-
-export const askQuestion = async (
-  question,
-  paper = null,
-  top_k = 5
-) => {
-  return api.post("/qa/ask", {
-    question,
-    paper,
-    top_k,
-  });
-};
-
-// ---------------- Analysis ----------------
-
-export const summarizePaper = async (paper_name) => {
-  return api.post("/analysis/summarize", {
-    paper_name,
-  });
-};
-
-export const comparePapers = async (
-  paper_a,
-  paper_b
-) => {
-  return api.post("/analysis/compare", {
-    paper_a,
-    paper_b,
-  });
-};
-
-export const generateRelatedWork = async (topic) => {
-  return api.post("/analysis/related-work", {
-    topic,
-  });
-};
-
-
-// ── Sessions ────────────
-
-export const createSession = (name) =>
-  api.post("/sessions/", { name });
-
-export const listSessions = () =>
-  api.get("/sessions/");
-
-export const getHistory = (sessionId) =>
-  api.get(`/sessions/${sessionId}/history`);
-
-export const deleteSession = (sessionId) =>
-  api.delete(`/sessions/${sessionId}`);
-
-export default api;
+// ── Analysis ───────────────────────────────────────────────────────────────────
+export const summarizePaper      = (paper_name)       => http.post('/analysis/summarize',    { paper_name })
+export const comparePapers       = (paper_a, paper_b) => http.post('/analysis/compare',      { paper_a, paper_b })
+export const generateRelatedWork = (topic)            => http.post('/analysis/related-work', { topic })

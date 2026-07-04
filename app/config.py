@@ -54,3 +54,8 @@ os.makedirs(CHROMA_PATH, exist_ok=True)
 # File uploads — temp storage before ingestion
 UPLOAD_DIR = "./uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+JWT_SECRET_KEY   = os.getenv("JWT_SECRET_KEY", "change-me-in-production")
+JWT_ALGORITHM    = "HS256"
+JWT_EXPIRE_HOURS = 24

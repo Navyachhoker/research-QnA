@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
-from app.api.routers import papers, qa, analysis , sessions 
+from app.api.routers import papers, qa, analysis , sessions, auth  
 
 Base.metadata.create_all(bind=engine)
 
@@ -26,8 +26,7 @@ app.add_middleware(
 
 # Register routers
 #registers all the endpoints defined in papers.py
-#
-#
+app.include_router(auth.router)
 app.include_router(papers.router)
 app.include_router(qa.router)
 app.include_router(analysis.router) 

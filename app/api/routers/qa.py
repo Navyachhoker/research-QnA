@@ -5,6 +5,8 @@ from database import get_db
 from app.services.retriever_service import retrieve
 from app.services.generator_service import generate
 from app.services.history_service import add_turn, get_turns, get_session
+from app.models import User
+from app.services.auth_service import get_current_user
 
 router = APIRouter(prefix ="/qa", tags= ["Q&A"])
 
@@ -16,27 +18,27 @@ class AskRequest(BaseModel):
     top_k: int  = 5
     session_id: int | None = None
     
-    
+ 
 @router.post("/ask")
-def ask(req: AskRequest, db: DBSession = Depends(get_db)):
+def ask(
+    req:          AskRequest,
+    db:           DBSession = Depends(get_db),
+    current_user: User      = Depends(get_current_user),
+):
     if not req.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty.")
 
-    # Load past turns for this session (if provided)
     history = []
     if req.session_id:
         session = get_session(db, req.session_id)
-        if not session:
+        if not session or session.user_id != current_user.id:
             raise HTTPException(status_code=404, detail="Session not found.")
-        past_turns = get_turns(db, req.session_id)
-        # Only pass last 6 turns to stay within token limits
-        history = [{"question": t.question, "answer": t.answer} for t in past_turns[-6:]]
+        past = get_turns(db, req.session_id)
+        history = [{"question": t.question, "answer": t.answer} for t in past[-6:]]
 
-    # Retrieve + generate
     chunks = retrieve(req.question, top_k=req.top_k, paper=req.paper)
     result = generate(req.question, chunks, history)
 
-    # Persist this turn
     if req.session_id:
         add_turn(db, req.session_id, req.question, result["answer"])
 

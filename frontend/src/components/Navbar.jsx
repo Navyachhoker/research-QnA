@@ -1,6 +1,7 @@
 // src/components/Navbar.jsx
 
 import { NavLink } from "react-router-dom";
+import { useAuth } from '../context/AuthContext'
 
 const navLinks = [
   {
@@ -22,35 +23,48 @@ const navLinks = [
 ];
 
 export default function Navbar() {
+  const { user, logout } = useAuth()
+  const navigate         = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
+
   return (
-    <nav className="bg-slate-900 shadow-md">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-8 py-4">
-
-        <h1 className="text-xl font-bold text-indigo-400">
-          ResearchGPT
-        </h1>
-
+    <nav className="bg-gray-900 text-white px-6 py-4 flex items-center justify-between shadow-md">
+      <div className="flex items-center gap-8">
+        <span className="font-bold text-lg tracking-tight text-indigo-400">ResearchGPT</span>
         <div className="flex gap-4">
-
-          {navLinks.map((link) => (
+          {links.map(({ to, label }) => (
             <NavLink
-              key={link.path}
-              to={link.path}
+              key={to}
+              to={to}
               end
               className={({ isActive }) =>
-                `px-4 py-2 rounded-lg transition-all duration-200 ${
+                `text-sm px-3 py-1.5 rounded transition-colors ${
                   isActive
-                    ? "bg-indigo-600 text-white"
-                    : "text-gray-300 hover:bg-slate-800 hover:text-white"
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-700'
                 }`
               }
             >
-              {link.label}
+              {label}
             </NavLink>
           ))}
-
         </div>
       </div>
+      {user && (
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-gray-400">{user.email}</span>
+          <button
+            onClick={handleLogout}
+            className="text-xs text-gray-300 hover:text-white border border-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            Logout
+          </button>
+        </div>
+      )}
     </nav>
-  );
+  )
 }
