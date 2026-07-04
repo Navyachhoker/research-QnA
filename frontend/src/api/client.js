@@ -64,4 +64,19 @@ export const generateRelatedWork = async (topic) => {
   });
 };
 
+
+// ── Sessions ────────────
+
+export const createSession = (name) =>
+  api.post("/sessions/", { name });
+
+export const listSessions = () =>
+  api.get("/sessions/");
+
+export const getHistory = (sessionId) =>
+  api.get(`/sessions/${sessionId}/history`);
+
+export const deleteSession = (sessionId) =>
+  api.delete(`/sessions/${sessionId}`);
+
 export default api;

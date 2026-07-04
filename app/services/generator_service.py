@@ -89,3 +89,37 @@ def generate(
         "answer": response.choices[0].message.content.strip(),
         "sources": sources,
     }
+    
+    
+def _build_prompt(question: str, chunks: list[dict], history: list[dict]) -> str:
+    """
+    Build the full prompt including:
+      1. Retrieved context chunks (RAG)
+      2. Past conversation turns (memory)
+      3. Current question
+    """
+    context = "\n\n".join(
+        f"[Source {i}]\nPaper: {c['paper']} | Page: {c['page']}\n---\n{c['text']}"
+        for i, c in enumerate(chunks, 1)
+    )
+
+    # Format past turns so the LLM understands the conversation so far
+    history_str = ""
+    if history:
+        history_str = "CONVERSATION HISTORY (for context only — do not re-answer these):\n"
+        for turn in history:
+            history_str += f"\nUser: {turn['question']}\nAssistant: {turn['answer']}\n"
+        history_str += "\n---\n"
+
+    return f"""You are a research assistant. Answer using ONLY the provided context.
+After every key claim, cite with [Source N].
+If the answer isn't in the context, say: "I could not find a relevant answer."
+
+CONTEXT FROM PAPERS:
+{context}
+
+{history_str}
+CURRENT QUESTION:
+{question}
+
+ANSWER:"""

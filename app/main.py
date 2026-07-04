@@ -2,8 +2,10 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routers import papers, qa, analysis 
+from database import engine, Base
+from app.api.routers import papers, qa, analysis , sessions 
 
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="ResearchGPT API",
@@ -28,7 +30,8 @@ app.add_middleware(
 #
 app.include_router(papers.router)
 app.include_router(qa.router)
-app.include_router(analysis.router)  
+app.include_router(analysis.router) 
+app.include_router(sessions.router)  
 
 @app.get("/")
 def root():

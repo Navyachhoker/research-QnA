@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from services.analysis_service import summarize_paper, compare_papers, generate_related_work
+from app.services.analysis_service import summarize_paper, compare_papers, generate_related_work
 
 router = APIRouter(prefix="/analysis", tags=["Analysis"])
 
