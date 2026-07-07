@@ -78,10 +78,10 @@ def chunk_text(
                 }
             )
         # represents the starting position for next chunk
-        start += chunk_size - overlap 
+            start += chunk_size - overlap 
 
-        #inc chunk no
-        chunk_index += 1
+            #inc chunk no
+            chunk_index += 1
 
     print(f"[PDF] Created {len(chunks)} chunks.")
 

@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import engine, Base
+from app.database import engine, Base
 from app.api.routers import papers, qa, analysis , sessions, auth  
 
 Base.metadata.create_all(bind=engine)

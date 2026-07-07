@@ -8,7 +8,7 @@ from app.services.auth_service import (
     get_user_by_email, create_user,
     verify_password, create_token, get_current_user
 )
-from models import User
+from app.models import User
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 

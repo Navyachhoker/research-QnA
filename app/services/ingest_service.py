@@ -23,34 +23,30 @@ collection = chroma.get_or_create_collection(
     name= COLLECTION_NAME
 )
 
-def ingest_pdf(
-    pdf_path: str,
-    paper_name: str,
-) -> int:
+def ingest_pdf(pdf_path: str, paper_name: str) -> int:
     print("1. Starting ingestion")
+
     pages = extract_text_from_pdf(pdf_path)
-    
+    print("2. Text extracted")
+
     chunks = chunk_text(pages)
-    
-    #only get chunk text for embedding generation
-    texts = [
-        chunk["text"]
-        for chunk in chunks
-    ]
-    
-    #Generate vector embeddings
+    print(f"3. Created {len(chunks)} chunks")
+
+    texts = [chunk["text"] for chunk in chunks]
+    print("4. Prepared text list")
+
     embeddings = embedder.encode(
         texts,
-        show_progress_bar=False
+        show_progress_bar=True
     ).tolist()
-    
-    # Create a unique ID for every chunk
+    print("5. Embeddings generated")
+
     ids = [
         f"{paper_name}__p{chunk['page']}__c{chunk['chunk_index']}"
         for chunk in chunks
     ]
-    
-    # Store useful metadata with every chunk
+    print("6. IDs created")
+
     metadatas = [
         {
             "paper": paper_name,
@@ -59,16 +55,15 @@ def ingest_pdf(
         }
         for chunk in chunks
     ]
+    print("7. Metadata created")
 
-    # Store everything inside ChromaDB
     collection.upsert(
         ids=ids,
         embeddings=embeddings,
         documents=texts,
         metadatas=metadatas,
     )
-
-    print(f"[INGEST] Stored {len(chunks)} chunks for '{paper_name}'.")
+    print("8. Stored in Chroma")
 
     return len(chunks)
 

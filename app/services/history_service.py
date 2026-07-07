@@ -1,7 +1,7 @@
 # backend/services/history_service.py
 
 from sqlalchemy.orm import Session as DBSession
-from models import Session, Turn
+from app.models import Session, Turn
 
 
 # ── Sessions ───────────────────────────────────────────────────────────────────
