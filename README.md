@@ -2,12 +2,6 @@
 
 > An AI-powered research assistant that allows users to upload research papers, build a semantic knowledge base, ask context-aware questions, generate summaries, and perform paper analysis using Retrieval-Augmented Generation (RAG).
 
-![Python](https://img.shields.io/badge/Python-3.11-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688)
-![React](https://img.shields.io/badge/React-Frontend-61DAFB)
-![ChromaDB](https://img.shields.io/badge/VectorDB-ChromaDB-purple)
-![JWT](https://img.shields.io/badge/Auth-JWT-green)
-![License](https://img.shields.io/badge/License-MIT-orange)
 
 ---
 
@@ -27,23 +21,6 @@ The project demonstrates modern AI application architecture by combining:
 - JWT Authentication
 - Persistent Chat Sessions
 
----
-
-## 📸 Screenshots
-
-### Login & Registration
-![Login](screenshots/login.png)
-
-### Research Dashboard
-![Dashboard](screenshots/dashboard.png)
-
-### Research Q&A Interface
-![Chat](screenshots/chat.png)
-
-### Paper Analysis & Summaries
-![Analysis](screenshots/analysis.png)
-
----
 
 # ✨ Features
 
