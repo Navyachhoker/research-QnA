@@ -2,19 +2,22 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# System deps needed by PyMuPDF
+# System deps for PyMuPDF
 RUN apt-get update && apt-get install -y \
     libmupdf-dev \
+    gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python deps first (better Docker layer caching)
+# Copy requirements first (better layer caching)
 COPY requirements.txt .
+
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-download embedding model so cold starts are fast
+# Pre-download embedding model
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 
-# Copy app code
+# Copy rest of app
 COPY . .
 
 ENV PORT=8000
