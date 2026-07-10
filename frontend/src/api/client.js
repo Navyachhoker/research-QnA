@@ -1,14 +1,22 @@
 // src/api/client.js
 import axios from 'axios'
 
-const http = axios.create({ baseURL: '/api' })
+// Your backend routes are /sessions/, /papers/, /qa/ etc.
+// No /api prefix needed
+const http = axios.create({ baseURL: '/' })
 
-// Attach token from localStorage before every request
 http.interceptors.request.use((config) => {
   const stored = localStorage.getItem('rg_user')
   if (stored) {
-    const { token } = JSON.parse(stored)
-    config.headers.Authorization = `Bearer ${token}`
+    try {
+      const parsed = JSON.parse(stored)
+      const token  = parsed.token || parsed.access_token
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+    } catch (e) {
+      console.error('Failed to parse auth token:', e)
+    }
   }
   return config
 })
@@ -26,10 +34,10 @@ export const uploadPaper = (file) => {
 export const listPapers = () => http.get('/papers/list')
 
 // ── Sessions ───────────────────────────────────────────────────────────────────
-export const createSession = (name)      => http.post('/sessions/', { name })
-export const listSessions  = ()          => http.get('/sessions/')
-export const getHistory    = (id)        => http.get(`/sessions/${id}/history`)
-export const deleteSession = (id)        => http.delete(`/sessions/${id}`)
+export const createSession = (name) => http.post('/sessions/', { name })
+export const listSessions  = ()     => http.get('/sessions/')
+export const getHistory    = (id)   => http.get(`/sessions/${id}/history`)
+export const deleteSession = (id)   => http.delete(`/sessions/${id}`)
 
 // ── Q&A ────────────────────────────────────────────────────────────────────────
 export const askQuestion = (question, paper = null, top_k = 5, session_id = null) =>
