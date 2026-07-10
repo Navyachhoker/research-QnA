@@ -8,20 +8,16 @@ services:
     plan: free
     envVars:
       - key: GROQ_API_KEY
-        sync: false              
+        sync: false
       - key: JWT_SECRET_KEY
         sync: false
       - key: CHROMA_PATH
-        value: /data/chroma_db
+        value: ./chroma_db
       - key: DATABASE_URL
-        value: sqlite:////data/researchgpt.db
+        value: sqlite:///./researchgpt.db
       - key: UPLOAD_DIR
-        value: /data/uploads
+        value: ./uploads
       - key: DATA_DIR
-        value: /data
+        value: ./data
       - key: ALLOWED_ORIGINS
-        sync: false               
-    disk:
-      name: researchgpt-data
-      mountPath: /data
-      sizeGB: 1
+        sync: false
