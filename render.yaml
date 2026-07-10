@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: researchgpt-api
+    runtime: docker
+    rootDir: app
+    dockerfilePath: ./Dockerfile
+    branch: main
+    plan: free
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false              
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: CHROMA_PATH
+        value: /data/chroma_db
+      - key: DATABASE_URL
+        value: sqlite:////data/researchgpt.db
+      - key: UPLOAD_DIR
+        value: /data/uploads
+      - key: DATA_DIR
+        value: /data
+      - key: ALLOWED_ORIGINS
+        sync: false               
+    disk:
+      name: researchgpt-data
+      mountPath: /data
+      sizeGB: 1
