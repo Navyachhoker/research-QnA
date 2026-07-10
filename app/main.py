@@ -1,24 +1,24 @@
-# backend/main.py
-
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.api.routers import papers, qa, analysis , sessions, auth  
+from app.routers import papers, qa, analysis, sessions, auth
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    title="ResearchGPT API",
-    description="RAG-based research paper Q&A backend",
-    version="1.0.0",
-)
+app = FastAPI(title="ResearchGPT API", version="1.0.0")
+
+# In production this will be your Vercel URL
+# In dev it's * so localhost works
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+
 
 # Allow React frontend (any origin in dev — lock this down in prod)
 #* means allow requests from any website
 #* allows all methods(put, get, post, delete)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
