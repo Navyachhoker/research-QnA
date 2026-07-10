@@ -4,7 +4,7 @@
 
 #module provided by pyMuPDF for working with pdfs
 import fitz 
-from app.config import(
+from config import(
     CHUNK_SIZE,
     CHUNK_OVERLAP,
 )

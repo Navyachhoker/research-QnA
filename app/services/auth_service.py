@@ -6,9 +6,9 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session as DBSession
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from app.database import get_db
-from app.models import User
-from app.config import JWT_SECRET_KEY, JWT_ALGORITHM, JWT_EXPIRE_HOURS
+from database import get_db
+from models import User
+from config import JWT_SECRET_KEY, JWT_ALGORITHM, JWT_EXPIRE_HOURS
 
 pwd_context   = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")

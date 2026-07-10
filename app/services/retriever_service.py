@@ -1,6 +1,6 @@
 import chromadb
 from sentence_transformers import SentenceTransformer
-from app.config import (
+from config import (
     CHROMA_PATH,
     COLLECTION_NAME,
     EMBEDDING_MODEL,

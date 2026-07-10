@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session as DBSession
-from app.database import get_db
-from app.services.retriever_service import retrieve
-from app.services.generator_service import generate
-from app.services.history_service import add_turn, get_turns, get_session
-from app.models import User
-from app.services.auth_service import get_current_user
+from database import get_db
+from services.retriever_service import retrieve
+from services.generator_service import generate
+from services.history_service import add_turn, get_turns, get_session
+from models import User
+from services.auth_service import get_current_user
 
 router = APIRouter(prefix ="/qa", tags= ["Q&A"])
 

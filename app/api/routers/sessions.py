@@ -3,13 +3,13 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session as DBSession
-from app.database import get_db
-from app.services.history_service import (
+from database import get_db
+from services.history_service import (
     create_session, get_sessions, get_session,
     delete_session, get_turns
 )
-from app.models import User
-from app.services.auth_service import get_current_user
+from models import User
+from services.auth_service import get_current_user
 
 router = APIRouter(prefix="/sessions", tags=["Sessions"])
 

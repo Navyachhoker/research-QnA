@@ -2,7 +2,7 @@
 
 from groq import Groq
 
-from app.config import (
+from config import (
     GROQ_API_KEY,
     GROQ_MODEL,
     TEMPERATURE,

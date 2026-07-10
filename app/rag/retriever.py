@@ -1,10 +1,10 @@
 #Handles semantic retrieval from ChromaDB
 #Convert the user's question into an embedding
 
-from app.config import TOP_K
+from config import TOP_K
 
-from app.rag.embeddings import embedder
-from app.rag.vector_store import (
+from rag.embeddings import embedder
+from rag.vector_store import (
     query_chunks,
     get_all_papers,
 )

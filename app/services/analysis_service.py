@@ -1,9 +1,9 @@
 #summarization + comparison logic
 
 from groq import Groq
-from app.config import GROQ_API_KEY, GROQ_MODEL,TEMPERATURE, MAX_TOKENS
-from app.services.retriever_service import retrieve
-from app.services.ingest_service import list_papers
+from config import GROQ_API_KEY, GROQ_MODEL,TEMPERATURE, MAX_TOKENS
+from services.retriever_service import retrieve
+from services.ingest_service import list_papers
 
 client = Groq(api_key = GROQ_API_KEY)
 

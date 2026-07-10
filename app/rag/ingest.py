@@ -2,13 +2,13 @@
 
 import os
 
-from app.rag.embeddings import embedder
+from rag.embeddings import embedder
 
-from app.rag.vector_store import (
+from rag.vector_store import (
     store_chunks,
 )
 
-from app.utils.pdf_utils import (
+from utils.pdf_utils import (
     extract_text_from_pdf,
     chunk_text,
 )

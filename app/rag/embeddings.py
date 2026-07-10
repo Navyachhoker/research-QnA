@@ -1,5 +1,5 @@
 from sentence_transformers import SentenceTransformer
-from app.config import EMBEDDING_MODEL
+from config import EMBEDDING_MODEL
 
 print(f"[Embeddings] Loading model: {EMBEDDING_MODEL}")
 

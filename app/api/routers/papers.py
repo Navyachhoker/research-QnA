@@ -3,8 +3,8 @@
 import os
 import shutil
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from app.services.ingest_service import ingest_pdf, list_papers
-from app.config import UPLOAD_DIR
+from services.ingest_service import ingest_pdf, list_papers
+from config import UPLOAD_DIR
 
 
 router = APIRouter(prefix="/papers", tags=["Papers"])

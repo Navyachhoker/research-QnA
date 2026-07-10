@@ -2,13 +2,13 @@ import os
 import fitz
 import chromadb
 from sentence_transformers import SentenceTransformer
-from app.config import (
+from config import (
     CHROMA_PATH,
     COLLECTION_NAME,
     EMBEDDING_MODEL,
 )
 
-from app.utils.pdf_utils import (
+from utils.pdf_utils import (
     extract_text_from_pdf,
     chunk_text,
 )

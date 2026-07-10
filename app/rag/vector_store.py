@@ -1,6 +1,6 @@
 import chroma_db
 
-from app.config import(
+from config import(
     CHROMA_PATH,
     COLLECTION_NAME,
 )
