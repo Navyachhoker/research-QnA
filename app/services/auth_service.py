@@ -74,3 +74,11 @@ def get_current_user(
     if not user:
         raise HTTPException(status_code=401, detail="User not found.")
     return user
+
+
+def hash_password(plain: str) -> str:
+    # bcrypt max is 72 bytes — truncate to be safe
+    return pwd_context.hash(plain[:72])
+
+def verify_password(plain: str, hashed: str) -> bool:
+    return pwd_context.verify(plain[:72], hashed)
