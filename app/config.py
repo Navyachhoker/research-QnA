@@ -9,7 +9,7 @@ GROQ_MODEL       = "llama-3.3-70b-versatile"
 EMBEDDING_MODEL = "paraphrase-MiniLM-L3-v2"  # 17MB — 5x smaller
 TEMPERATURE      = 0.2
 MAX_TOKENS       = 1024
-TOP_K            = 5
+TOP_K            = 10
 CHUNK_SIZE       = 500
 CHUNK_OVERLAP    = 100
 

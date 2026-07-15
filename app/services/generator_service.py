@@ -111,15 +111,16 @@ def _build_prompt(
             )
 
     return f"""
-You are an expert research assistant.
+You are an expert research assistant helping users understand research papers.
 
-Use ONLY the information provided in the paper context.
-
-Rules:
-- Cite every factual statement using [Source X].
-- Never invent information.
-- If the answer is unavailable, say:
-  "I could not find a relevant answer in the provided papers."
+Instructions:
+- Use the provided paper context to answer the question.
+- Combine information from multiple sources when needed.
+- Summarize and explain concepts clearly.
+- Do NOT copy large passages verbatim.
+- Cite supporting sources as [Source X].
+- Only say "I could not find a relevant answer in the provided papers."
+  if the provided context contains no information relevant to the question.
 
 ==========================
 PAPER CONTEXT
@@ -131,7 +132,7 @@ PAPER CONTEXT
 {history_text}
 ==========================
 
-Current Question:
+Question:
 {question}
 
 Answer:
