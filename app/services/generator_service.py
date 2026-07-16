@@ -76,64 +76,33 @@ def generate(
     }
 
 
-def _build_prompt(
-    question: str,
-    chunks: list[dict],
-    history: list[dict],
-) -> str:
-    """
-    Builds the complete prompt using:
-      • Retrieved paper chunks
-      • Conversation history
-      • Current question
-    """
-
+def _build_prompt(question: str, chunks: list[dict], history: list[dict]) -> str:
     context = "\n\n".join(
-        f"[Source {i}]\n"
-        f"Paper: {chunk['paper']}\n"
-        f"Page: {chunk['page']}\n\n"
-        f"{chunk['text']}"
-        for i, chunk in enumerate(chunks, start=1)
+        f"[Source {i}]\nPaper: {c['paper']} | Page: {c['page']}\n---\n{c['text']}"
+        for i, c in enumerate(chunks, 1)
     )
 
-    history_text = ""
-
+    history_str = ""
     if history:
-        history_text = (
-            "Conversation History "
-            "(Use only for context. Do not repeat previous answers.)\n\n"
-        )
-
+        history_str = "CONVERSATION HISTORY:\n"
         for turn in history:
-            history_text += (
-                f"User: {turn['question']}\n"
-                f"Assistant: {turn['answer']}\n\n"
-            )
+            history_str += f"\nUser: {turn['question']}\nAssistant: {turn['answer']}\n"
+        history_str += "\n---\n"
 
-    return f"""
-You are an expert research assistant helping users understand research papers.
+    return f"""You are an expert research paper analyst. Answer questions about academic papers clearly and precisely.
 
-Instructions:
-- Use the provided paper context to answer the question.
-- Combine information from multiple sources when needed.
-- Summarize and explain concepts clearly.
-- Do NOT copy large passages verbatim.
-- Cite supporting sources as [Source X].
-- Only say "I could not find a relevant answer in the provided papers."
-  if the provided context contains no information relevant to the question.
+RULES:
+1. Answer ONLY using the provided context — never use outside knowledge
+2. Cite every claim with [Source N] immediately after the sentence
+3. Use clear academic language but keep it accessible
+4. Structure longer answers with bullet points or numbered lists
+5. If comparing papers, clearly label which paper you're referring to
+6. If the answer isn't in the context say: "This information is not available in the provided papers."
 
-==========================
-PAPER CONTEXT
-==========================
-
+CONTEXT FROM PAPERS:
 {context}
 
-==========================
-{history_text}
-==========================
+{history_str}
+QUESTION: {question}
 
-Question:
-{question}
-
-Answer:
-"""
+ANSWER:"""
