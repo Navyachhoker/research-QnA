@@ -9,9 +9,10 @@ not just string overlap.
 """
 
 import json
-from groq import Groq  # you already have this in your TEOCO stack
+from groq import Groq
+from app.config import GROQ_API_KEY
 
-client = Groq()  # assumes GROQ_API_KEY is set in env
+client = Groq(api_key=GROQ_API_KEY)  # assumes GROQ_API_KEY is set in env
 
 JUDGE_PROMPT = """You are evaluating a RAG system's answer. Score strictly.
 

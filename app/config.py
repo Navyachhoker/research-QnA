@@ -7,6 +7,7 @@ GROQ_API_KEY     = os.getenv("GROQ_API_KEY")
 GROQ_MODEL       = "llama-3.3-70b-versatile"
 #EMBEDDING_MODEL  = "all-MiniLM-L6-v2" too big , runs out of memory 
 EMBEDDING_MODEL = "paraphrase-MiniLM-L3-v2"  # 17MB — 5x smaller
+#EMBEDDING_MODEL = "sentence-transformers/multi-qa-mpnet-base-dot-v1"
 TEMPERATURE      = 0.2
 MAX_TOKENS       = 1024
 TOP_K            = 10

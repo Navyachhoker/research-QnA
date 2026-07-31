@@ -36,7 +36,7 @@ def ask(
         past = get_turns(db, req.session_id)
         history = [{"question": t.question, "answer": t.answer} for t in past[-6:]]
 
-    chunks = retrieve(req.question, top_k=req.top_k, paper=req.paper)
+    chunks = retrieve(req.question, top_k=req.top_k, paper=req.paper, user_id=current_user.id)    
     result = generate(req.question, chunks, history)
 
     if req.session_id:

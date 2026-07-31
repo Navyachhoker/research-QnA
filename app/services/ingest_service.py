@@ -38,7 +38,7 @@ def get_collection():
 
 # ── Functions ──────────────────────────────────────────────────────────────────
 
-def ingest_pdf(pdf_path: str, paper_name: str) -> int:
+def ingest_pdf(pdf_path: str, paper_name: str, user_id: int) -> int:
     print("1. Starting ingestion")
 
     pages = extract_text_from_pdf(pdf_path)
@@ -69,8 +69,10 @@ def ingest_pdf(pdf_path: str, paper_name: str) -> int:
 
     print("5. Embeddings generated")
 
+    # NOTE: chunk IDs now include user_id so the same paper uploaded by two
+    # different users doesn't collide/overwrite each other in Chroma.
     ids = [
-        f"{paper_name}__p{chunk['page']}__c{chunk['chunk_index']}"
+        f"user{user_id}__{paper_name}__p{chunk['page']}__c{chunk['chunk_index']}"
         for chunk in chunks
     ]
     print("6. IDs created")
@@ -80,6 +82,7 @@ def ingest_pdf(pdf_path: str, paper_name: str) -> int:
             "paper": paper_name,
             "page": chunk["page"],
             "chunk_index": chunk["chunk_index"],
+            "user_id": user_id,   # ← scopes every chunk to its owner
         }
         for chunk in chunks
     ]
@@ -97,7 +100,10 @@ def ingest_pdf(pdf_path: str, paper_name: str) -> int:
     return len(chunks)
 
 
-def list_papers() -> list[str]:
-    result = get_collection().get(include=["metadatas"])
+def list_papers(user_id: int) -> list[str]:
+    result = get_collection().get(
+        where={"user_id": user_id},
+        include=["metadatas"],
+    )
     metadata = result["metadatas"]
     return sorted({item["paper"] for item in metadata})

@@ -32,14 +32,18 @@ def get_collection():
 # ── Functions ──────────────────────────────────────────────────────────────────
 
 def retrieve(
-    query:  str,
-    top_k:  int        = TOP_K,
-    paper:  str | None = None,
+    query:   str,
+    top_k:   int        = TOP_K,
+    paper:   str | None = None,
+    user_id: int         = None,
 ) -> list[dict]:
 
     query_embedding = get_embedder().encode([query]).tolist()
 
-    where_filter = {"paper": paper} if paper else None
+    if paper:
+        where_filter = {"$and": [{"user_id": user_id}, {"paper": paper}]}
+    else:
+        where_filter = {"user_id": user_id}
 
     results = get_collection().query(
         query_embeddings=query_embedding,
