@@ -1,109 +1,44 @@
-import os
-import fitz
-import chromadb
-from sentence_transformers import SentenceTransformer
-from config import (
-    CHROMA_PATH,
-    COLLECTION_NAME,
-    EMBEDDING_MODEL,
-)
-from utils.pdf_utils import (
-    extract_text_from_pdf,
-    chunk_text,
-)
+import uuid
+from pathlib import Path
+from fastapi import UploadFile
+from sqlalchemy.orm import Session
 
-# ── Lazy singletons ────────────────────────────────────────────────────────────
-# NOT loaded at import time — only when first request comes in
-# This keeps startup memory under 512MB on Render free tier
-
-_embedder = None
-_chroma = None
-_collection = None
+from app.config import settings
+from app.utils.pdf_utils import extract_text_by_page
+from app.rag.ingest import chunk_text
+from app.rag.vector_store import get_vector_store
+from app.db.models import Paper
 
 
-def get_embedder() -> SentenceTransformer:
-    global _embedder
-    if _embedder is None:
-        _embedder = SentenceTransformer(EMBEDDING_MODEL)
-    return _embedder
+def save_uploaded_file(file: UploadFile, paper_id: str) -> Path:
+    settings.papers_dir.mkdir(parents=True, exist_ok=True)
+    dest_path = settings.papers_dir / f"{paper_id}.pdf"
+    with open(dest_path, "wb") as f:
+        f.write(file.file.read())
+    return dest_path
 
 
-def get_collection():
-    global _chroma, _collection
-    if _collection is None:
-        _chroma = chromadb.PersistentClient(path=CHROMA_PATH)
-        _collection = _chroma.get_or_create_collection(name=COLLECTION_NAME)
-    return _collection
+def ingest_paper(file: UploadFile, db: Session, owner_id: str) -> dict:
+    paper_id = str(uuid.uuid4())[:8]
+    pdf_path = save_uploaded_file(file, paper_id)
 
+    pages = extract_text_by_page(pdf_path)
+    chunks = chunk_text(pages, paper_id=paper_id)
+    get_vector_store().add_chunks(chunks)
 
-# ── Functions ──────────────────────────────────────────────────────────────────
-
-def ingest_pdf(pdf_path: str, paper_name: str, user_id: int) -> int:
-    print("1. Starting ingestion")
-
-    pages = extract_text_from_pdf(pdf_path)
-    print("2. Text extracted")
-
-    chunks = chunk_text(pages)
-    print(f"3. Created {len(chunks)} chunks")
-
-    texts = [chunk["text"] for chunk in chunks]
-    print("4. Prepared text list")
-
-    embeddings = []
-
-    model = get_embedder()
-
-    for i in range(0, len(texts), 8):
-        batch = texts[i:i + 8]
-
-        batch_embeddings = model.encode(
-            batch,
-            convert_to_numpy=True,
-            show_progress_bar=False,
-        )
-
-        embeddings.extend(batch_embeddings.tolist())
-
-        print(f"Processed batch {i // 8 + 1}")
-
-    print("5. Embeddings generated")
-
-    # NOTE: chunk IDs now include user_id so the same paper uploaded by two
-    # different users doesn't collide/overwrite each other in Chroma.
-    ids = [
-        f"user{user_id}__{paper_name}__p{chunk['page']}__c{chunk['chunk_index']}"
-        for chunk in chunks
-    ]
-    print("6. IDs created")
-
-    metadatas = [
-        {
-            "paper": paper_name,
-            "page": chunk["page"],
-            "chunk_index": chunk["chunk_index"],
-            "user_id": user_id,   # ← scopes every chunk to its owner
-        }
-        for chunk in chunks
-    ]
-    print("7. Metadata created")
-
-    get_collection().upsert(
-        ids=ids,
-        embeddings=embeddings,
-        documents=texts,
-        metadatas=metadatas,
+    paper_record = Paper(
+        paper_id=paper_id,
+        owner_id=owner_id,
+        filename=file.filename,
+        num_pages=len(pages),
+        num_chunks=len(chunks),
     )
+    db.add(paper_record)
+    db.commit()
 
-    print("8. Stored in Chroma")
-
-    return len(chunks)
-
-
-def list_papers(user_id: int) -> list[str]:
-    result = get_collection().get(
-        where={"user_id": user_id},
-        include=["metadatas"],
-    )
-    metadata = result["metadatas"]
-    return sorted({item["paper"] for item in metadata})
+    return {
+        "paper_id": paper_id,
+        "filename": file.filename,
+        "num_pages": len(pages),
+        "num_chunks": len(chunks),
+    }
