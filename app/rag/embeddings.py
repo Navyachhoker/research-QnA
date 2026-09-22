@@ -1,6 +1,6 @@
-from sentence_transformers import SentenceTransformer
-from typing import List
 from functools import lru_cache
+
+from sentence_transformers import SentenceTransformer
 
 
 class EmbeddingModel:
@@ -19,10 +19,10 @@ class EmbeddingModel:
             self._model = SentenceTransformer(self._model_name)
         return self._model
 
-    def embed_texts(self, texts: List[str]) -> List[List[float]]:
+    def embed_texts(self, texts: list[str]) -> list[list[float]]:
         return self._get_model().encode(texts, show_progress_bar=False).tolist()
 
-    def embed_query(self, query: str) -> List[float]:
+    def embed_query(self, query: str) -> list[float]:
         return self.embed_texts([query])[0]
 
 
@@ -32,4 +32,6 @@ def get_embedding_model() -> EmbeddingModel:
     Shared instance for production/app use (cached so the model only loads once).
     Tests do NOT use this — they construct a fake EmbeddingModel directly.
     """
-    return EmbeddingModel()
+    from app.config import settings
+
+    return EmbeddingModel(model_name=settings.embedding_model)

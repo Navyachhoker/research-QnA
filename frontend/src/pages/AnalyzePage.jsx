@@ -84,7 +84,7 @@ export default function AnalyzePage() {
             </label>
             <select value={sumPaper} onChange={(e) => setSumPaper(e.target.value)} className={selectClass}>
               <option value="">— choose a paper —</option>
-              {papers.map((p) => <option key={p} value={p}>{p}</option>)}
+              {papers.map((p) => <option key={p.paper_id} value={p.paper_id}>{p.filename}</option>)}
             </select>
           </div>
         )}
@@ -96,7 +96,7 @@ export default function AnalyzePage() {
                 <label className="block text-xs font-medium text-ink-secondary mb-2">{label}</label>
                 <select value={val} onChange={(e) => setter(e.target.value)} className={selectClass}>
                   <option value="">— choose —</option>
-                  {papers.map((p) => <option key={p} value={p}>{p}</option>)}
+                  {papers.map((p) => <option key={p.paper_id} value={p.paper_id}>{p.filename}</option>)}
                 </select>
               </div>
             ))}

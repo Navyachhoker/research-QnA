@@ -1,10 +1,11 @@
-from sqlalchemy.orm import Session
-from fastapi import HTTPException
 from pathlib import Path
 
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+
+from app.config import settings
 from app.db.models import Paper
 from app.rag.vector_store import get_vector_store
-from app.config import settings
 
 
 def list_papers(db: Session, owner_id: str) -> list[Paper]:
@@ -21,7 +22,7 @@ def get_paper(paper_id: str, db: Session, owner_id: str) -> Paper:
 def delete_paper(paper_id: str, db: Session, owner_id: str) -> None:
     paper = get_paper(paper_id, db, owner_id)
 
-    get_vector_store().delete_paper_chunks(paper_id)
+    get_vector_store().delete_paper_chunks(paper_id, owner_id=owner_id)
 
     pdf_path: Path = settings.papers_dir / f"{paper_id}.pdf"
     if pdf_path.exists():

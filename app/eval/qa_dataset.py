@@ -11,89 +11,88 @@ you're just guessing whether an answer sounds right.
 from dataclasses import dataclass
 from typing import List
 
+
 @dataclass
 class QAItem:
     question: str
-    expected_answer: str      # rough summary, used as reference for the judge
+    expected_answer: str  # rough summary, used as reference for the judge
     relevant_chunk_ids: List[str]  # ground truth — which chunks SHOULD be retrieved
 
 
 QA_DATASET: List[QAItem] = [
-
-    # ---------- BERT paper ----------
+    # ---------- transformer for language understanfing.pdf paper ----------
     QAItem(
-        question="What accuracy improvement did BERT achieve over the prior state of the art on average?",
-        expected_answer="BERT obtained roughly 4.5% and 7.0% average accuracy improvement over the prior state of the art (BERTBASE and BERTLARGE respectively).",
-        relevant_chunk_ids=["tranformer for language understanfingv2__p6__c4"],
+        question="What accuracy improvement did transformer for language understanfing.pdf achieve over the prior state of the art on average?",
+        expected_answer="transformer for language understanfing.pdf obtained roughly 4.5% and 7.0% average accuracy improvement over the prior state of the art (transformer for language understanfing.pdfBASE and transformer for language understanfing.pdfLARGE respectively).",
+        relevant_chunk_ids=["transformer for language understanfing.pdf__p6__c4"],
     ),
     QAItem(
-        question="How many Cloud TPUs were used to pre-train BERT, and how long did it take?",
-        expected_answer="BERT was pre-trained on 16 Cloud TPUs (64 TPU chips total), taking 4 days to complete.",
-        relevant_chunk_ids=["tranformer for language understanfingv2__p13__c7"],
+        question="How many Cloud TPUs were used to pre-train transformer for language understanfing.pdf, and how long did it take?",
+        expected_answer="transformer for language understanfing.pdf was pre-trained on 16 Cloud TPUs (64 TPU chips total), taking 4 days to complete.",
+        relevant_chunk_ids=["transformer for language understanfing.pdf__p13__c7"],
     ),
     QAItem(
-        question="What batch size and sequence length were used during BERT's pre-training?",
+        question="What batch size and sequence length were used during transformer for language understanfing.pdf's pre-training?",
         expected_answer="A batch size of 256 sequences with 512 tokens each (128,000 tokens per batch) was used for 1,000,000 steps.",
-        relevant_chunk_ids=["tranformer for language understanfingv2__p13__c5"],
+        relevant_chunk_ids=["transformer for language understanfing.pdf__p13__c5"],
     ),
     QAItem(
-        question="What activation function does BERT use instead of ReLU?",
-        expected_answer="BERT uses a GELU activation function rather than the standard ReLU.",
-        relevant_chunk_ids=["tranformer for language understanfingv2__p13__c6"],
+        question="What activation function does transformer for language understanfing.pdf use instead of ReLU?",
+        expected_answer="transformer for language understanfing.pdf uses a GELU activation function rather than the standard ReLU.",
+        relevant_chunk_ids=["transformer for language understanfing.pdf__p13__c6"],
     ),
     QAItem(
-        question="What learning rates were tried during BERT's fine-tuning?",
+        question="What learning rates were tried during transformer for language understanfing.pdf's fine-tuning?",
         expected_answer="Learning rates of 5e-5, 3e-5, and 2e-5 were tried, along with 2, 3, and 4 epochs.",
-        relevant_chunk_ids=["tranformer for language understanfingv2__p14__c0"],
+        relevant_chunk_ids=["transformer for language understanfing.pdf__p14__c0"],
     ),
     QAItem(
-        question="What is the masking strategy BERT uses during pre-training?",
+        question="What is the masking strategy transformer for language understanfing.pdf uses during pre-training?",
         expected_answer="80% of the time the word is replaced with [MASK], with the remaining time split between keeping the word unchanged and replacing it with a random token.",
         relevant_chunk_ids=[
-            "tranformer for language understanfingv2__p12__c7",
-            "tranformer for language understanfingv2__p16__c6",
+            "transformer for language understanfing.pdf__p12__c7",
+            "transformer for language understanfing.pdf__p16__c6",
         ],
     ),
     QAItem(
-        question="How does removing Next Sentence Prediction (NSP) affect BERT's performance on the Dev set?",
-        expected_answer="Removing NSP slightly decreases accuracy across MNLI, QNLI, MRPC, SST-2, and SQuAD compared to the full BERTBASE model.",
+        question="How does removing Next Sentence Prediction (NSP) affect transformer for language understanfing.pdf's performance on the Dev set?",
+        expected_answer="Removing NSP slightly decreases accuracy across MNLI, QNLI, MRPC, SST-2, and SQuAD compared to the full transformer for language understanfing.pdfBASE model.",
         relevant_chunk_ids=[
-            "tranformer for language understanfingv2__p8__c0",
-            "tranformer for language understanfingv2__p8__c4",
+            "transformer for language understanfing.pdf__p8__c0",
+            "transformer for language understanfing.pdf__p8__c4",
         ],
     ),
     QAItem(
         question="What is the CoLA task evaluating?",
         expected_answer="CoLA (Corpus of Linguistic Acceptability) is a binary classification task predicting whether an English sentence is linguistically acceptable.",
-        relevant_chunk_ids=["tranformer for language understanfingv2__p15__c2"],
+        relevant_chunk_ids=["transformer for language understanfing.pdf__p15__c2"],
     ),
     QAItem(
         question="What is MRPC and what does it consist of?",
         expected_answer="MRPC (Microsoft Research Paraphrase Corpus) consists of sentence pairs automatically extracted from online news sources.",
-        relevant_chunk_ids=["tranformer for language understanfingv2__p15__c3"],
+        relevant_chunk_ids=["transformer for language understanfing.pdf__p15__c3"],
     ),
     QAItem(
         question="Does increasing model size continue to improve performance on large-scale tasks?",
         expected_answer="Yes, larger models lead to strict accuracy improvements across tasks, even on smaller datasets like MRPC, and this trend is expected to continue for large-scale tasks like machine translation.",
         relevant_chunk_ids=[
-            "tranformer for language understanfingv2__p8__c8",
-            "tranformer for language understanfingv2__p8__c10",
+            "transformer for language understanfing.pdf__p8__c8",
+            "transformer for language understanfing.pdf__p8__c10",
         ],
     ),
     QAItem(
-        question="How many WordPiece tokens are masked in each sequence during BERT's pre-training?",
+        question="How many WordPiece tokens are masked in each sequence during transformer for language understanfing.pdf's pre-training?",
         expected_answer="15% of all WordPiece tokens in each sequence are masked at random.",
-        relevant_chunk_ids=["tranformer for language understanfingv2__p4__c7"],
+        relevant_chunk_ids=["transformer for language understanfing.pdf__p4__c7"],
     ),
     QAItem(
-        question="What two unsupervised tasks does BERT use for pre-training?",
-        expected_answer="BERT is pre-trained using Masked LM (MLM) and Next Sentence Prediction (NSP).",
+        question="What two unsupervised tasks does transformer for language understanfing.pdf use for pre-training?",
+        expected_answer="transformer for language understanfing.pdf is pre-trained using Masked LM (MLM) and Next Sentence Prediction (NSP).",
         relevant_chunk_ids=[
-            "tranformer for language understanfingv2__p4__c4",
-            "tranformer for language understanfingv2__p4__c10",
+            "transformer for language understanfing.pdf__p4__c4",
+            "transformer for language understanfing.pdf__p4__c10",
         ],
     ),
-
     # ---------- Attention Is All You Need (Transformer) paper ----------
     QAItem(
         question="What BLEU score did the Transformer achieve on English-to-German translation, and how long did training take?",
@@ -143,14 +142,13 @@ QA_DATASET: List[QAItem] = [
         expected_answer="The Transformer relies entirely on an attention mechanism to draw global dependencies between input and output.",
         relevant_chunk_ids=["NIPS-2017-attention-is-all-you-need-Paper__p2__c3"],
     ),
-
     # ---------- Cross-paper question ----------
     QAItem(
-        question="How does BERT's use of the Transformer architecture differ from the original Transformer described in Attention Is All You Need?",
-        expected_answer="BERT uses a bidirectional Transformer encoder (based on the original implementation), while the original Transformer paper describes a full encoder-decoder architecture used mainly for translation; BERT also uses bidirectional self-attention compared to GPT's constrained left-to-right version.",
+        question="How does transformer for language understanfing.pdf's use of the Transformer architecture differ from the original Transformer described in Attention Is All You Need?",
+        expected_answer="transformer for language understanfing.pdf uses a bidirectional Transformer encoder (based on the original implementation), while the original Transformer paper describes a full encoder-decoder architecture used mainly for translation; transformer for language understanfing.pdf also uses bidirectional self-attention compared to GPT's constrained left-to-right version.",
         relevant_chunk_ids=[
-            "tranformer for language understanfingv2__p3__c6",
-            "tranformer for language understanfingv2__p3__c8",
+            "transformer for language understanfing.pdf__p3__c6",
+            "transformer for language understanfing.pdf__p3__c8",
             "NIPS-2017-attention-is-all-you-need-Paper__p2__c10",
         ],
     ),

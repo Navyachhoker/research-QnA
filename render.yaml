@@ -2,7 +2,6 @@ services:
   - type: web
     name: researchgpt-api
     runtime: docker
-    rootDir: app
     dockerfilePath: ./Dockerfile
     branch: main
     plan: free

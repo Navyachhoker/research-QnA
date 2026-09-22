@@ -141,7 +141,7 @@ export default function AskPage() {
           >
             <option value="">All papers</option>
             {papers.map((p) => (
-              <option key={p} value={p}>{p}</option>
+              <option key={p.paper_id} value={p.paper_id}>{p.filename}</option>
             ))}
           </select>
         </div>

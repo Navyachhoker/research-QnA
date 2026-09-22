@@ -1,16 +1,24 @@
 // src/pages/PapersPage.jsx
 import { useEffect, useState } from 'react'
-import { listPapers } from '../api/client'
+import { listPapers, deletePaper } from '../api/client'
 
 export default function PapersPage() {
   const [papers, setPapers]   = useState([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const refresh = () => {
+    setLoading(true)
     listPapers()
       .then(({ data }) => setPapers(data.papers))
       .finally(() => setLoading(false))
-  }, [])
+  }
+
+  useEffect(() => { refresh() }, [])
+
+  const handleDelete = async (paperId) => {
+    await deletePaper(paperId)
+    setPapers((prev) => prev.filter((p) => p.paper_id !== paperId))
+  }
 
   return (
     <div className="max-w-2xl mx-auto py-12 px-4">
@@ -33,9 +41,9 @@ export default function PapersPage() {
       )}
 
       <div className="space-y-2">
-        {papers.map((name, i) => (
+        {papers.map((paper) => (
           <div
-            key={name}
+            key={paper.paper_id}
             className="flex items-center gap-3 bg-surface-raised border border-surface-border rounded-xl px-4 py-3 group"
           >
             <div className="w-9 h-9 bg-accent-bg rounded-lg flex items-center justify-center flex-shrink-0">
@@ -45,15 +53,15 @@ export default function PapersPage() {
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-ink truncate">{name}</p>
-              <p className="text-xs text-ink-muted">Paper {i + 1}</p>
+              <p className="text-sm font-medium text-ink truncate">{paper.filename}</p>
+              <p className="text-xs text-ink-muted">{paper.num_pages} pages · {paper.num_chunks} chunks</p>
             </div>
             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <span className="text-xs bg-accent-bg border border-accent-border text-accent-light px-2.5 py-1 rounded-md cursor-pointer">
-                Ask
-              </span>
-              <span className="text-xs border border-surface-border text-ink-secondary px-2.5 py-1 rounded-md cursor-pointer hover:text-ink">
-                Summarize
+              <span
+                className="text-xs border border-surface-border text-ink-secondary px-2.5 py-1 rounded-md cursor-pointer hover:text-red-500 hover:border-red-300"
+                onClick={() => handleDelete(paper.paper_id)}
+              >
+                Delete
               </span>
             </div>
           </div>

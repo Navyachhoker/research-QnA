@@ -1,48 +1,28 @@
-# backend/routers/auth.py
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel, EmailStr
-from sqlalchemy.orm import Session as DBSession
-from database import get_db
-from services.auth_service import (
-    get_user_by_email, create_user,
-    verify_password, create_token, get_current_user
-)
-from models import User
+from app.api.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserResponse
+from app.db.database import get_db
+from app.db.models import User
+from app.services import auth_service
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-class RegisterRequest(BaseModel):
-    email:    EmailStr
-    password: str
-
-class LoginRequest(BaseModel):
-    email:    EmailStr
-    password: str
+@router.post("/register", response_model=TokenResponse, status_code=201)
+def register(payload: RegisterRequest, db: Session = Depends(get_db)):
+    user = auth_service.register_user(db, email=payload.email, password=payload.password)
+    token = auth_service.create_access_token(user.user_id, user.email)
+    return TokenResponse(access_token=token, email=user.email)
 
 
-@router.post("/register")
-def register(req: RegisterRequest, db: DBSession = Depends(get_db)):
-    if get_user_by_email(db, req.email):
-        raise HTTPException(status_code=400, detail="Email already registered.")
-    if len(req.password) < 6:
-        raise HTTPException(status_code=400, detail="Password must be at least 6 characters.")
-    user  = create_user(db, req.email, req.password)
-    token = create_token(user.id, user.email)
-    return {"access_token": token, "token_type": "bearer", "email": user.email}
+@router.post("/login", response_model=TokenResponse)
+def login(payload: LoginRequest, db: Session = Depends(get_db)):
+    user = auth_service.authenticate_user(db, email=payload.email, password=payload.password)
+    token = auth_service.create_access_token(user.user_id, user.email)
+    return TokenResponse(access_token=token, email=user.email)
 
 
-@router.post("/login")
-def login(req: LoginRequest, db: DBSession = Depends(get_db)):
-    user = get_user_by_email(db, req.email)
-    if not user or not verify_password(req.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Invalid email or password.")
-    token = create_token(user.id, user.email)
-    return {"access_token": token, "token_type": "bearer", "email": user.email}
-
-
-@router.get("/me")
-def me(current_user: User = Depends(get_current_user)):
-    """Return the currently logged-in user's info."""
-    return {"id": current_user.id, "email": current_user.email}
+@router.get("/me", response_model=UserResponse)
+def me(current_user: User = Depends(auth_service.get_current_user)):
+    return current_user

@@ -67,9 +67,9 @@ export default function UploadPage() {
             Ingested Papers
           </p>
 
-          {papers.map((paper, index) => (
+          {papers.map((paper) => (
             <div
-              key={paper}
+              key={paper.paper_id}
               className="flex items-center gap-3 bg-surface-raised border border-surface-border rounded-xl px-4 py-3"
             >
               <div className="w-8 h-8 bg-accent-bg rounded-lg flex items-center justify-center flex-shrink-0">
@@ -87,11 +87,11 @@ export default function UploadPage() {
 
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-ink truncate">
-                  {paper}
+                  {paper.filename}
                 </p>
 
                 <p className="text-xs text-ink-muted">
-                  Paper {index + 1}
+                  {paper.num_pages} pages
                 </p>
               </div>
 

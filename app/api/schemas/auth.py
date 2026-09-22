@@ -1,35 +1,31 @@
-# backend/schemas/auth.py
+from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field
-from datetime import datetime
 
 
 class RegisterRequest(BaseModel):
-    email: EmailStr                        # validates it's actually an email format
-    password: str = Field(
-        ...,
-        min_length=6,
-        max_length=128,
-        description="Password must be at least 6 characters"
-    )
+    email: EmailStr
+    password: str = Field(..., min_length=8, max_length=128, description="At least 8 characters")
 
 
 class LoginRequest(BaseModel):
-    email:    EmailStr
+    email: EmailStr
     password: str = Field(..., min_length=1)
 
 
 class TokenResponse(BaseModel):
     """Returned on successful login or register."""
+
     access_token: str
-    token_type:   str = "bearer"
-    email:        str
+    token_type: str = "bearer"
+    email: str
 
 
 class UserResponse(BaseModel):
     """Returned by GET /auth/me."""
-    id:         int
-    email:      str
+
+    user_id: str
+    email: str
     created_at: datetime
 
-    model_config = {"from_attributes": True}   # allows .model_validate(orm_object)
+    model_config = {"from_attributes": True}

@@ -1,5 +1,5 @@
 """
-Uses your existing Groq wiring to score whether the generated answer is:
+Uses the same Groq wiring as the app to score whether a generated answer is:
 - Faithful: grounded in the retrieved context (not hallucinated)
 - Relevant: actually answers the question asked
 
@@ -9,10 +9,10 @@ not just string overlap.
 """
 
 import json
-from groq import Groq
-from app.config import GROQ_API_KEY
 
-client = Groq(api_key=GROQ_API_KEY)  # assumes GROQ_API_KEY is set in env
+from groq import Groq
+
+from app.config import settings
 
 JUDGE_PROMPT = """You are evaluating a RAG system's answer. Score strictly.
 
@@ -30,14 +30,16 @@ Respond ONLY with valid JSON, no other text:
 {{"faithfulness": <int>, "relevance": <int>, "reasoning": "<one sentence>"}}
 """
 
+
 def judge_answer(question: str, context: str, answer: str) -> dict:
+    client = Groq(api_key=settings.require_groq_api_key())
     prompt = JUDGE_PROMPT.format(question=question, context=context, answer=answer)
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model=settings.groq_model,
         messages=[{"role": "user", "content": prompt}],
         temperature=0,  # deterministic scoring, not creative
     )
-    raw = response.choices[0].message.content.strip()
+    raw = (response.choices[0].message.content or "").strip()
     try:
         return json.loads(raw)
     except json.JSONDecodeError:

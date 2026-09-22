@@ -1,7 +1,6 @@
-# backend/schemas/sessions.py
+from datetime import datetime
 
 from pydantic import BaseModel, Field
-from datetime import datetime
 
 
 class CreateSessionRequest(BaseModel):
@@ -9,26 +8,21 @@ class CreateSessionRequest(BaseModel):
 
 
 class SessionResponse(BaseModel):
-    """Single session summary."""
-    id:         int
-    name:       str
+    id: str
+    name: str
     created_at: datetime
 
     model_config = {"from_attributes": True}
 
 
 class TurnResponse(BaseModel):
-    """Single Q&A turn within a session."""
-    id:         int
-    question:   str
-    answer:     str
-    created_at: datetime
-
-    model_config = {"from_attributes": True}
+    id: int | None = None
+    question: str
+    answer: str
+    created_at: datetime | None = None
 
 
 class HistoryResponse(BaseModel):
-    """Full session history returned by GET /sessions/{id}/history."""
-    session_id:   int
+    session_id: str
     session_name: str
-    turns:        list[TurnResponse]
+    turns: list[TurnResponse]

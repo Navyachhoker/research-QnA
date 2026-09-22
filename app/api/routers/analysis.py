@@ -1,51 +1,65 @@
-#summarize + compare endpoints
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from services.analysis_service import summarize_paper, compare_papers, generate_related_work
+from app.api.schemas.analysis import (
+    CompareRequest,
+    CompareResponse,
+    RelatedWorkRequest,
+    RelatedWorkResponse,
+    SummarizeRequest,
+    SummarizeResponse,
+)
+from app.db.database import get_db
+from app.db.models import User
+from app.services import (
+    auth_service,
+    comparator_service,
+    paper_service,
+    related_work_service,
+    summarizer_service,
+)
 
-router = APIRouter(prefix="/analysis", tags=["Analysis"])
-
-
-class SummarizeRequest(BaseModel):
-    paper_name: str
-
-
-class CompareRequest(BaseModel):
-    paper_a: str
-    paper_b: str
-
-
-class RelatedWorkRequest(BaseModel):
-    topic: str
-
-
-@router.post("/summarize")
-def summarize(req: SummarizeRequest):
-    """Summarize a single ingested paper."""
-    try:
-        return summarize_paper(req.paper_name)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+router = APIRouter(prefix="/analysis", tags=["analysis"])
 
 
-@router.post("/compare")
-def compare(req: CompareRequest):
-    """Compare two ingested papers side by side."""
-    if req.paper_a == req.paper_b:
-        raise HTTPException(status_code=400, detail="paper_a and paper_b must be different.")
-    try:
-        return compare_papers(req.paper_a, req.paper_b)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+@router.post("/summarize", response_model=SummarizeResponse)
+def summarize(
+    payload: SummarizeRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth_service.get_current_user),
+):
+    paper = paper_service.get_paper(payload.paper_id, db, owner_id=current_user.user_id)
+    summary = summarizer_service.summarize_paper(paper.paper_id, owner_id=current_user.user_id)
+    return SummarizeResponse(paper_id=paper.paper_id, filename=paper.filename, summary=summary)
 
 
-@router.post("/related-work")
-def related_work(req: RelatedWorkRequest):
-    """Generate a Related Work section from all ingested papers on a given topic."""
-    if not req.topic.strip():
-        raise HTTPException(status_code=400, detail="Topic cannot be empty.")
-    try:
-        return generate_related_work(req.topic)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+@router.post("/compare", response_model=CompareResponse)
+def compare(
+    payload: CompareRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth_service.get_current_user),
+):
+    paper_a = paper_service.get_paper(payload.paper_a_id, db, owner_id=current_user.user_id)
+    paper_b = paper_service.get_paper(payload.paper_b_id, db, owner_id=current_user.user_id)
+    comparison = comparator_service.compare_papers(
+        paper_a.paper_id, paper_b.paper_id, owner_id=current_user.user_id
+    )
+    return CompareResponse(
+        paper_a=paper_a.filename,
+        paper_b=paper_b.filename,
+        comparison=comparison,
+    )
+
+
+@router.post("/related-work", response_model=RelatedWorkResponse)
+def related_work(
+    payload: RelatedWorkRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth_service.get_current_user),
+):
+    result = related_work_service.generate_related_work_by_topic(payload.topic, owner_id=current_user.user_id)
+    return RelatedWorkResponse(
+        topic=payload.topic,
+        related_work=result["related_work"],
+        referenced_paper_ids=result["referenced_paper_ids"],
+    )

@@ -1,82 +1,68 @@
-# Coordinates the ingestion pipeline
+"""Turns extracted page text into overlapping chunks ready for embedding."""
 
-import os
+import uuid
 
-from rag.embeddings import embedder
-
-from rag.vector_store import (
-    store_chunks,
-)
-
-from utils.pdf_utils import (
-    extract_text_from_pdf,
-    chunk_text,
-)
+from app.config import settings
 
 
-def ingest_pdf(
-    pdf_path: str,
-) -> str:
+def chunk_text(
+    pages: list[dict],
+    paper_id: str,
+    owner_id: str,
+    chunk_size: int | None = None,
+    overlap: int | None = None,
+) -> list[dict]:
+    """
+    Split extracted pages into overlapping chunks.
 
-    #Ingest a single PDF into ChromaDB.
-    
+    Splits on whitespace so a chunk never cuts a word in half (the previous
+    implementation sliced raw character windows, which regularly split
+    words and even mid-token, degrading embedding quality). Overlap is
+    measured in words for the same reason.
 
-    if not os.path.exists(pdf_path):
-        raise FileNotFoundError(
-            f"PDF not found: {pdf_path}"
-        )
-    #splittext-> split paper name and extension(.pdf)
-    paper_name = os.path.splitext(
-        os.path.basename(pdf_path)
-    )[0]
+    Each returned chunk is a fully self-describing dict:
+      {chunk_id, paper_id, owner_id, page_number, text}
+    which is exactly what VectorStore.add_chunks expects, and owner_id is
+    what makes per-user retrieval scoping possible downstream.
+    """
+    chunk_size = chunk_size if chunk_size is not None else settings.chunk_size
+    overlap = overlap if overlap is not None else settings.chunk_overlap
 
-    print(f"\n[Ingest] Processing '{paper_name}'")
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be positive")
+    if overlap < 0 or overlap >= chunk_size:
+        raise ValueError("overlap must be >= 0 and < chunk_size")
 
-    pages = extract_text_from_pdf(pdf_path)
+    chunks: list[dict] = []
 
-    chunks = chunk_text(pages)
-    #tet needed for embedding model
-    texts = [
-        chunk["text"]
-        for chunk in chunks
-    ]
-    # each chunk txt is converted into 1 embedding vector
-    embeddings = embedder.encode(
-        texts,
-        show_progress_bar=True,
-    ).tolist()
+    for page in pages:
+        words = page["text"].split()
+        if not words:
+            continue
 
-    ids = []
+        # Rough words-per-chunk budget derived from the character target,
+        # so CHUNK_SIZE/CHUNK_OVERLAP (character counts) keep meaning
+        # regardless of this word-based implementation.
+        avg_word_len = max(1, len(page["text"]) // len(words))
+        words_per_chunk = max(1, chunk_size // avg_word_len)
+        words_overlap = max(0, min(words_per_chunk - 1, overlap // avg_word_len))
+        step = max(1, words_per_chunk - words_overlap)
 
-    documents = []
+        start = 0
+        chunk_index = 0
+        while start < len(words):
+            end = start + words_per_chunk
+            piece = " ".join(words[start:end])
+            chunks.append(
+                {
+                    "chunk_id": f"{paper_id}_p{page['page_number']}_c{chunk_index}_{uuid.uuid4().hex[:6]}",
+                    "paper_id": paper_id,
+                    "owner_id": owner_id,
+                    "page_number": page["page_number"],
+                    "text": piece,
+                }
+            )
+            chunk_index += 1
+            start += step
 
-    metadatas = []
-
-    for chunk in chunks:
-
-        ids.append(
-            f"{paper_name}_p{chunk['page']}_c{chunk['chunk_index']}"
-        )
-
-        documents.append(
-            chunk["text"]
-        )
-
-        metadatas.append(
-            {
-                "paper": paper_name,
-                "page": chunk["page"],
-                "chunk_index": chunk["chunk_index"],
-            }
-        )
-
-    store_chunks(
-        ids=ids,
-        embeddings=embeddings,
-        documents=documents,
-        metadatas=metadatas,
-    )
-
-    print(f"[Ingest] Stored {len(chunks)} chunks.")
-
-    return paper_name
+    return chunks

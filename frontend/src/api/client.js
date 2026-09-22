@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-const http = axios.create({ 
-  baseURL: 'https://researchgpt-api-3yq6.onrender.com'
+const http = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 })
 
 http.interceptors.request.use((config) => {
@@ -28,6 +28,8 @@ export const uploadPaper = (file) => {
 }
 export const listPapers = () => http.get('/papers/list')
 
+export const deletePaper = (paper_id) => http.delete(`/papers/${paper_id}`)
+
 export const createSession = (name) => http.post('/sessions/', { name })
 export const listSessions  = ()     => http.get('/sessions/')
 export const getHistory    = (id)   => http.get(`/sessions/${id}/history`)
@@ -36,6 +38,6 @@ export const deleteSession = (id)   => http.delete(`/sessions/${id}`)
 export const askQuestion = (question, paper = null, top_k = 5, session_id = null) =>
   http.post('/qa/ask', { question, paper, top_k, session_id })
 
-export const summarizePaper      = (paper_name)       => http.post('/analysis/summarize',    { paper_name })
-export const comparePapers       = (paper_a, paper_b) => http.post('/analysis/compare',      { paper_a, paper_b })
-export const generateRelatedWork = (topic)            => http.post('/analysis/related-work', { topic })
+export const summarizePaper      = (paper_id)             => http.post('/analysis/summarize',    { paper_id })
+export const comparePapers       = (paper_a_id, paper_b_id) => http.post('/analysis/compare',      { paper_a_id, paper_b_id })
+export const generateRelatedWork = (topic)                => http.post('/analysis/related-work', { topic })

@@ -1,45 +1,40 @@
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
-from sqlalchemy.orm import Session as DBSession
-from database import get_db
-from services.retriever_service import retrieve
-from services.generator_service import generate
-from services.history_service import add_turn, get_turns, get_session
-from models import User
-from services.auth_service import get_current_user
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-router = APIRouter(prefix ="/qa", tags= ["Q&A"])
+from app.api.schemas.qa import AskRequest, AskResponse
+from app.db.database import get_db
+from app.db.models import User
+from app.services import auth_service, chat_service, generator_service, paper_service, retriever_service
 
-#to validate incoming request
-#defines what JSON(API) expects
-class AskRequest(BaseModel):
-    question: str
-    paper: str | None = None #type annotation(str | None)-> paper can be str, or none, and default value would be None
-    top_k: int  = 5
-    session_id: int | None = None
-    
- 
-@router.post("/ask")
+router = APIRouter(prefix="/qa", tags=["qa"])
+
+
+@router.post("/ask", response_model=AskResponse)
 def ask(
-    req:          AskRequest,
-    db:           DBSession = Depends(get_db),
-    current_user: User      = Depends(get_current_user),
+    payload: AskRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth_service.get_current_user),
 ):
-    if not req.question.strip():
-        raise HTTPException(status_code=400, detail="Question cannot be empty.")
+    if payload.paper:
+        # Raises 404 if the paper doesn't exist or belongs to another
+        # user — the caller can't probe for other users' paper_ids by
+        # trying them here.
+        paper_service.get_paper(payload.paper, db, owner_id=current_user.user_id)
 
-    history = []
-    if req.session_id:
-        session = get_session(db, req.session_id)
-        if not session or session.user_id != current_user.id:
-            raise HTTPException(status_code=404, detail="Session not found.")
-        past = get_turns(db, req.session_id)
-        history = [{"question": t.question, "answer": t.answer} for t in past[-6:]]
+    chunks = retriever_service.retrieve_chunks(
+        query=payload.question,
+        owner_id=current_user.user_id,
+        top_k=payload.top_k,
+        paper_id=payload.paper,
+    )
 
-    chunks = retrieve(req.question, top_k=req.top_k, paper=req.paper, user_id=current_user.id)    
-    result = generate(req.question, chunks, history)
+    if payload.session_id:
+        session = chat_service.get_owned_session(db, payload.session_id, owner_id=current_user.user_id)
+        history = chat_service.get_recent_history(db, session.session_id)
+        result = generator_service.answer_query_with_history(payload.question, chunks, history)
+        chat_service.add_message(db, session.session_id, role="user", content=payload.question)
+        chat_service.add_message(db, session.session_id, role="assistant", content=result["answer"])
+    else:
+        result = generator_service.answer_query(payload.question, chunks)
 
-    if req.session_id:
-        add_turn(db, req.session_id, req.question, result["answer"])
-
-    return result
+    return AskResponse(**result)

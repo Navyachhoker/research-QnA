@@ -2,18 +2,30 @@
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
 .env
+.env.*
+!.env.example
 venv/
 .venv/
+*.egg-info/
+build/
+dist/
 
-# Data — never commit these
+# Vector DB / local data (catch ANY directory name used for this, not just chroma_db/)
 chroma_db/
+chroma_db_test/
+your_chroma_db_path/
+*chroma_db*/
+*.sqlite3
 researchgpt.db
+*.db
 uploads/
 data/
-*.db
 
-# Node
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
 node_modules/
 dist/
 .env.local
@@ -24,10 +36,15 @@ dist/
 Thumbs.db
 Thumbs.db:encryptable
 
-# VS Code
+# Editors
 .vscode/
+.idea/
 
-# Pytest
+# Test / coverage
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 htmlcov/
 .coverage
+.coverage.*
+coverage.xml

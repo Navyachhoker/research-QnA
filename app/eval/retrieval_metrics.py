@@ -5,6 +5,7 @@ run this on every commit without burning Groq quota.
 
 from typing import List
 
+
 def recall_at_k(retrieved_ids: List[str], relevant_ids: List[str], k: int) -> float:
     """
     Of all the chunks that SHOULD have been retrieved, what fraction actually
@@ -16,6 +17,7 @@ def recall_at_k(retrieved_ids: List[str], relevant_ids: List[str], k: int) -> fl
     relevant = set(relevant_ids)
     hits = len(top_k & relevant)
     return hits / len(relevant)
+
 
 def mrr(retrieved_ids: List[str], relevant_ids: List[str]) -> float:
     """
