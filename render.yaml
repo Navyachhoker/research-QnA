@@ -1,22 +1,54 @@
+# Render deployment config.
+#
+# IMPORTANT — persistence: a Render web service's filesystem is ephemeral
+# by default (wiped on every restart/redeploy) UNLESS you attach a
+# persistent disk, which requires a paid plan (Starter or above — "free"
+# does not support disks). This config uses Postgres (works on Render's
+# free database tier) for the relational data, and a persistent disk for
+# ChromaDB + uploaded PDFs.
+#
+# If you want to deploy on the free web-service tier instead and are okay
+# with papers/chat history resetting on every redeploy (fine for a demo
+# link, not fine for real use): change `plan: starter` to `plan: free`
+# below and delete the `disk:` block. DATABASE_URL can still point at the
+# free Postgres — only the vector store / uploaded files would be
+# non-persistent in that case.
+
+databases:
+  - name: researchgpt-db
+    plan: free
+    databaseName: researchgpt
+    user: researchgpt
+
 services:
   - type: web
     name: researchgpt-api
     runtime: docker
     dockerfilePath: ./Dockerfile
     branch: main
-    plan: free
+    plan: starter # required for the persistent disk below
+    disk:
+      name: researchgpt-data
+      mountPath: /srv/data
+      sizeGB: 1
     envVars:
       - key: GROQ_API_KEY
         sync: false
       - key: JWT_SECRET_KEY
         sync: false
-      - key: CHROMA_PATH
-        value: ./chroma_db
       - key: DATABASE_URL
-        value: sqlite:///./researchgpt.db
+        fromDatabase:
+          name: researchgpt-db
+          property: connectionString
+      - key: CHROMA_PATH
+        value: /srv/data/chroma_db
       - key: UPLOAD_DIR
-        value: ./uploads
+        value: /srv/data/uploads
       - key: DATA_DIR
-        value: ./data
+        value: /srv/data
       - key: ALLOWED_ORIGINS
         sync: false
+      - key: ENABLE_HYBRID_SEARCH
+        value: "true"
+      - key: ENABLE_RERANKING
+        value: "true"

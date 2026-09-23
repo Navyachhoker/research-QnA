@@ -9,10 +9,13 @@ RUN apt-get update && apt-get install -y \
 
 COPY requirements.txt .
 
-# Install CPU-only torch first explicitly
+# Install CPU-only torch first explicitly (unpinned — PyTorch periodically
+# drops old +cpu wheels from their index, so pinning an exact version here
+# breaks the build once that version is no longer served; this grabs
+# whatever current CPU build is available instead).
 RUN pip install --no-cache-dir \
-    --extra-index-url https://download.pytorch.org/whl/cpu \
-    torch==2.3.1+cpu
+    --index-url https://download.pytorch.org/whl/cpu \
+    torch
 
 RUN pip install --no-cache-dir -r requirements.txt
 

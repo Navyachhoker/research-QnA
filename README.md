@@ -96,7 +96,7 @@ cd research-QnA
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 
-pip install --extra-index-url https://download.pytorch.org/whl/cpu torch==2.3.1+cpu
+pip install --index-url https://download.pytorch.org/whl/cpu torch
 pip install -r requirements.txt
 
 cp .env.example .env
@@ -130,7 +130,24 @@ npm run dev
 docker build -t researchgpt .
 docker run -p 8000:8000 --env-file .env researchgpt
 ```
+## 🚢 Deployment (Render)
 
+This repo's `render.yaml` deploys as a [Render Blueprint](https://render.com/docs/blueprint-spec). Push to GitHub, then in the Render dashboard: **New → Blueprint**, connect this repo, and it reads `render.yaml` automatically.
+
+**Two paths, depending on what you need:**
+
+**Path A — real persistence (recommended for anything beyond a demo link)**
+`render.yaml` as committed provisions a free Postgres database and a **paid** web service (`plan: starter`, currently ~$7/mo) with a persistent disk mounted at `/srv/data` for ChromaDB and uploaded PDFs. Without a paid plan's disk, Render's filesystem is wiped on every restart/redeploy — your users, papers, and chat history would disappear each time you push. This is the only way to avoid that on Render.
+
+**Path B — free tier, ephemeral (fine for a demo link, not for real use)**
+Change `plan: starter` to `plan: free` and delete the `disk:` block in `render.yaml`. Papers/sessions/vector data reset on every redeploy, but Postgres (free tier) still persists user accounts between deploys since it's a separate managed service, not part of the web service's disk.
+
+**Either way, after the Blueprint deploys:**
+1. In the Render dashboard, go to your service's **Environment** tab and set the two secrets `render.yaml` deliberately leaves blank (`sync: false`): `GROQ_API_KEY` and `JWT_SECRET_KEY` (generate one the same way as local: `python -c "import secrets; print(secrets.token_urlsafe(48))"`).
+2. Set `ALLOWED_ORIGINS` to your actual frontend URL once you know it (e.g. your Vercel/Netlify deploy URL) — CORS will reject the frontend otherwise.
+3. Deploy your frontend (Vercel, Netlify, or similar) with `VITE_API_BASE_URL` set to your Render backend's URL.
+
+`DATABASE_URL` is wired automatically via `fromDatabase` — Render injects the real Postgres connection string; you don't set it by hand. Note `app/db/database.py` only applies SQLite-specific connection options when the URL is actually SQLite, so this Postgres switch needed no other code changes.
 ---
 
 ## 🧪 Testing
