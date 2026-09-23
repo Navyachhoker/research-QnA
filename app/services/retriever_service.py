@@ -11,14 +11,17 @@ def retrieve_chunks(
     paper_id: str | None = None,
 ) -> list[dict]:
     """
-    Retrieval pipeline: vector search (+ optional BM25 keyword search,
-    fused via Reciprocal Rank Fusion) gathers a candidate pool, which an
-    optional cross-encoder reranker then narrows down to the final top_k.
-    Both extra stages are individually toggleable (settings.enable_hybrid_search,
-    settings.enable_reranking) so a memory- or latency-constrained
-    deployment can fall back to plain vector search.
+    Retrieval pipeline:
+
+        vector search ─┐
+                       ├─> RRF -> candidate pool -> reranker -> final top_k
+        BM25 search ───┘
+
+    Hybrid search and reranking can independently be disabled through
+    settings.
     """
     store = get_vector_store()
+
     candidate_pool = max(settings.retrieval_candidate_pool, top_k)
 
     vector_hits = store.search(
@@ -30,16 +33,32 @@ def retrieve_chunks(
     )
 
     if settings.enable_hybrid_search:
-        corpus = store.get_all_chunks(owner_id=owner_id, paper_id=paper_id)
-        keyword_hits = bm25_search(query, corpus, top_k=candidate_pool)
-        candidates = reciprocal_rank_fusion([vector_hits, keyword_hits])
+        corpus = store.get_all_chunks(
+            owner_id=owner_id,
+            paper_id=paper_id,
+        )
+
+        keyword_hits = bm25_search(
+            query,
+            corpus,
+            top_k=candidate_pool,
+        )
+
+        candidates = reciprocal_rank_fusion(
+            [vector_hits, keyword_hits]
+        )
+
     else:
-        candidates = vector_hits
+        candidates = vector_hits[:candidate_pool]
 
     if not candidates:
         return []
 
     if settings.enable_reranking:
-        return get_reranker().rerank(query, candidates, top_k=top_k)
+        return get_reranker().rerank(
+            query,
+            candidates,
+            top_k=top_k,
+        )
 
     return candidates[:top_k]

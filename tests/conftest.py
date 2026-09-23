@@ -105,16 +105,27 @@ class FakeAnswerGenerator:
 
 
 class FakeReranker:
-    """Stands in for CrossEncoderReranker — tests don't need real
-    cross-encoder scoring, just a deterministic pass-through so retrieval
-    pipeline tests aren't coupled to a real model download. Preserves
-    input order and simply truncates to top_k, which is enough for
-    integration tests that check *whether* results come back, not their
-    exact ranking (ranking-quality is covered separately in
-    tests/unit/test_keyword_search.py and test_reranker.py)."""
+    """
+    Deterministic fake for integration tests.
+
+    Unlike a simple pass-through fake, this deliberately reverses the
+    candidate order so tests can prove that the retrieval pipeline actually
+    calls the reranker and uses the reranker's returned ordering.
+    """
+
+    def __init__(self):
+        self.calls = []
 
     def rerank(self, query, chunks, top_k):
-        return chunks[:top_k]
+        self.calls.append(
+            {
+                "query": query,
+                "input_count": len(chunks),
+                "top_k": top_k,
+            }
+        )
+
+        return list(reversed(chunks))[:top_k]
 
 
 # ---------------------------------------------------------------------------
