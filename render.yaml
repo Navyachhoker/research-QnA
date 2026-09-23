@@ -1,18 +1,30 @@
-# Render deployment config.
+# Render deployment config — FREE TIER.
 #
 # IMPORTANT — persistence: a Render web service's filesystem is ephemeral
-# by default (wiped on every restart/redeploy) UNLESS you attach a
-# persistent disk, which requires a paid plan (Starter or above — "free"
-# does not support disks). This config uses Postgres (works on Render's
-# free database tier) for the relational data, and a persistent disk for
-# ChromaDB + uploaded PDFs.
+# by default (wiped on every restart/redeploy/inactivity spin-down)
+# UNLESS you attach a persistent disk, which requires a paid plan
+# (Starter or above — free does NOT support disks). This config runs
+# fully on Render's free tiers: free web service + free Postgres, no
+# disk. That means uploaded PDFs and the ChromaDB vector store reset
+# every time the instance restarts or spins down from inactivity — fine
+# for a demo link, not fine for data you need to keep. Postgres (user
+# accounts, sessions) is a separate always-on managed service and is
+# NOT affected by the web service resetting — but Render's free Postgres
+# itself expires 30 days after creation and must be recreated (which
+# wipes registered users) unless upgraded.
 #
-# If you want to deploy on the free web-service tier instead and are okay
-# with papers/chat history resetting on every redeploy (fine for a demo
-# link, not fine for real use): change `plan: starter` to `plan: free`
-# below and delete the `disk:` block. DATABASE_URL can still point at the
-# free Postgres — only the vector store / uploaded files would be
-# non-persistent in that case.
+# MEMORY: the free/starter web service tier gives 512MB RAM regardless
+# of which of the two you pick — this app loads a PyTorch-based sentence
+# embedding model (and, if enabled, a second PyTorch cross-encoder for
+# reranking) into that same 512MB alongside FastAPI/Uvicorn/ChromaDB.
+# Two things below hold this under the limit on free: reranking is
+# disabled by default (ENABLE_RERANKING=false — cuts a whole second
+# PyTorch model), and OMP_NUM_THREADS/TOKENIZERS_PARALLELISM are capped
+# to reduce PyTorch's own per-thread memory overhead. Retrieval quality
+# is slightly lower without reranking (results are still relevant, just
+# not re-ordered by the second-pass cross-encoder) — re-enable it later
+# by flipping ENABLE_RERANKING to "true" if you move to a paid plan with
+# more RAM.
 
 databases:
   - name: researchgpt-db
@@ -26,11 +38,7 @@ services:
     runtime: docker
     dockerfilePath: ./Dockerfile
     branch: main
-    plan: starter # required for the persistent disk below
-    disk:
-      name: researchgpt-data
-      mountPath: /srv/data
-      sizeGB: 1
+    plan: free
     envVars:
       - key: GROQ_API_KEY
         sync: false
@@ -40,15 +48,15 @@ services:
         fromDatabase:
           name: researchgpt-db
           property: connectionString
-      - key: CHROMA_PATH
-        value: /srv/data/chroma_db
-      - key: UPLOAD_DIR
-        value: /srv/data/uploads
-      - key: DATA_DIR
-        value: /srv/data
       - key: ALLOWED_ORIGINS
         sync: false
       - key: ENABLE_HYBRID_SEARCH
         value: "true"
       - key: ENABLE_RERANKING
-        value: "true"
+        value: "false" # cross-encoder reranker disabled: won't fit alongside the embedding model in 512MB
+      - key: OMP_NUM_THREADS
+        value: "1" # caps PyTorch's per-thread memory overhead
+      - key: TOKENIZERS_PARALLELISM
+        value: "false" # same reason, for the HF tokenizers used under sentence-transformers
+      - key: ANONYMIZED_TELEMETRY
+        value: "false" # silences a ChromaDB/PostHog telemetry call that errors on this chromadb version (harmless but noisy in logs)
