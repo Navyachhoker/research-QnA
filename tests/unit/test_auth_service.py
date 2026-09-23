@@ -73,3 +73,34 @@ def test_create_access_token_requires_jwt_secret():
     with patch.object(settings, "jwt_secret_key", None):
         with pytest.raises(RuntimeError):
             auth_service.create_access_token(user_id="u1", email="a@example.com")
+
+
+def test_create_access_token_requires_jwt_secret():
+    with patch.object(settings, "jwt_secret_key", None):
+        with pytest.raises(RuntimeError):
+            auth_service.create_access_token(user_id="u1", email="a@example.com")
+
+
+# --- Regression: auth_service normalizes email case defensively ---
+# (belt-and-suspenders for the schema-level normalization in
+# app/api/schemas/auth.py -- see tests/integration/test_auth_api.py for
+# the end-to-end register/login reproduction of the original bug.)
+
+
+def test_register_user_normalizes_email_case(test_db):
+    db = test_db()
+    try:
+        user = auth_service.register_user(db, email="MixedCase@Example.com", password="password123")
+        assert user.email == "mixedcase@example.com"
+    finally:
+        db.close()
+
+
+def test_authenticate_user_normalizes_email_case(test_db):
+    db = test_db()
+    try:
+        auth_service.register_user(db, email="CaseTest@Example.com", password="password123")
+        user = auth_service.authenticate_user(db, email="casetest@example.com", password="password123")
+        assert user.email == "casetest@example.com"
+    finally:
+        db.close()

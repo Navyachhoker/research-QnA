@@ -55,6 +55,12 @@ def decode_access_token(token: str) -> dict:
 
 
 def register_user(db: Session, email: str, password: str) -> User:
+    # Defense in depth: the API schemas (RegisterRequest) already
+    # normalize email case before this is called, but normalizing again
+    # here means this function is safe to call from anywhere (scripts,
+    # future admin endpoints, tests) without silently reintroducing the
+    # case-mismatch bug this was written to fix.
+    email = email.strip().lower()
     existing = db.query(User).filter(User.email == email).first()
     if existing:
         raise HTTPException(
@@ -69,6 +75,7 @@ def register_user(db: Session, email: str, password: str) -> User:
 
 
 def authenticate_user(db: Session, email: str, password: str) -> User:
+    email = email.strip().lower()
     user = db.query(User).filter(User.email == email).first()
     if user is None or not verify_password(password, user.hashed_password):
         # Same message for "no such user" and "wrong password" — don't leak

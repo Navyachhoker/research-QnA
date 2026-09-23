@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from app.api.routers import analysis, auth, papers, qa, sessions
 from app.config import settings
-from app.db.database import Base, engine
+from app.db.database import Base, engine, normalize_existing_user_emails
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("researchgpt")
@@ -16,6 +16,11 @@ logger = logging.getLogger("researchgpt")
 # schema. If the models change in a way that needs a real migration
 # later, switch to Alembic rather than relying on this.
 Base.metadata.create_all(bind=engine)
+
+# Fixes existing rows (if any) written before email-case normalization
+# existed, so already-registered accounts aren't locked out by the fix
+# below. Safe to run on every startup -- a no-op once data is clean.
+normalize_existing_user_emails()
 
 app = FastAPI(title="ResearchGPT API", version="1.0.0")
 
