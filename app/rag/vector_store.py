@@ -31,26 +31,28 @@ class VectorStore:
         )
         self._embedding_model = embedding_model
 
-    def add_chunks(self, chunks: list[dict]) -> None:
+    def add_chunks(self, chunks: list[dict], batch_size: int = 16) -> None:
         if not chunks:
             return
 
-        texts = [c["text"] for c in chunks]
-        embeddings = self._embedding_model.embed_texts(texts)
+        for i in range(0, len(chunks), batch_size):
+            batch = chunks[i : i + batch_size]
+            texts = [c["text"] for c in batch]
+            embeddings = self._embedding_model.embed_texts(texts)
 
-        self._collection.add(
-            ids=[c["chunk_id"] for c in chunks],
-            embeddings=embeddings,  # type: ignore[arg-type]
-            documents=texts,
-            metadatas=[
-                {
-                    "paper_id": c["paper_id"],
-                    "owner_id": c["owner_id"],
-                    "page_number": c["page_number"],
-                }
-                for c in chunks
-            ],
-        )
+            self._collection.add(
+                ids=[c["chunk_id"] for c in batch],
+                embeddings=embeddings,  # type: ignore[arg-type]
+                documents=texts,
+                metadatas=[
+                    {
+                        "paper_id": c["paper_id"],
+                        "owner_id": c["owner_id"],
+                        "page_number": c["page_number"],
+                    }
+                    for c in batch
+                ],
+            )
 
     def search(
         self,
